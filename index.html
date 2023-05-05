@@ -125,10 +125,10 @@
         });
 
         $(".image-previews,.information").on('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             if (e.originalEvent.dataTransfer) {
                 if (e.originalEvent.dataTransfer.files.length) {
-                    e.preventDefault();
-                    e.stopPropagation();
                     var files = e.originalEvent.dataTransfer.files;
                     var html = '';
                     upload_images(files);
