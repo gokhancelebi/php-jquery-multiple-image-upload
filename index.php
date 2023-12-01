@@ -1,3 +1,6 @@
+<?php
+require_once __DIR__ . '/config.php';
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,10 +18,10 @@
 <div class="container mt-5">
     <div class="row">
         <div class="form mb-4">
-            <form action="upload.php" method="post" enctype="multipart/form-data" class="upload-form">
+            <form action="<?=UPLOAD_PHP_URL?>" method="post" enctype="multipart/form-data" class="upload-form">
                 <button type="button" class="upload-button btn btn-primary"> + Add Images</button>
                 <input type="file" name="fileUpload" multiple accept="image/*" id="multiple-image">
-                <button type="submit" class="btn btn-success">Submit</button>
+                <button type="submit" class="btn btn-success submit-button">Submit</button>
             </form>
         </div>
         <p>
@@ -28,8 +31,8 @@
         <div class="image-container">
             <div class="image-previews row">
                 <?php
-                if (file_exists(__DIR__ . '/order.json')){
-                    $files = file_get_contents(__DIR__ . '/order.json');
+                if (file_exists(BASE_DIR . '/order.json')){
+                    $files = file_get_contents(BASE_DIR . '/order.json');
 
                     $files = json_decode($files, true);
 
@@ -41,7 +44,7 @@
 
                     foreach ($files as $file => $order) {
                         echo '<div class="image">';
-                        echo '<img src="' . $file . '" class="img-fluid">';
+                        echo '<img src="' . UPLOAD_URL . $file . '" class="img-fluid">';
                         echo '<input type="hidden" name="order[' . $file . ']" value="' . $order . '" class="orders">';
                         echo '<div class="delete-image">X</div>';
                         echo '</div>';
@@ -110,15 +113,27 @@
                 order++;
             });
 
+            $('.upload-button').attr('disabled', true);
+            ('.submit-button').attr('disabled', true);
+
+
             $.ajax({
-                url: 'upload.php',
+                url: '<?=UPLOAD_PHP_URL?>',
                 method: 'post',
                 data: form_data,
                 contentType: false,
                 processData: false,
                 success: function (data) {
-                    console.log(data);
+                    form_data = new FormData();
+                    $('.image-previews').html('');
+                    $.get('<?=PREVIEW_PHP_URL?>', function (data) {
+                        $('.image-previews').html(data);
+                    });
                     alert(data);
+                    $('.upload-button').text('+ Add Images');
+                    $('.upload-button').attr('disabled', false);
+                    $('.submit-button').attr('disabled', false);
+
                 },
                 error: function (err) {
                     console.log(err);
