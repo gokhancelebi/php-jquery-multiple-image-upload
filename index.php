@@ -21,7 +21,7 @@ require_once __DIR__ . '/config.php';
             <form action="<?=UPLOAD_PHP_URL?>" method="post" enctype="multipart/form-data" class="upload-form">
                 <button type="button" class="upload-button btn btn-primary"> + Add Images</button>
                 <input type="file" name="fileUpload" multiple accept="image/*" id="multiple-image">
-                <button type="submit" class="btn btn-success submit-button">Submit</button>
+                <button type="submit" class="btn btn-success submit-button">Save</button>
             </form>
         </div>
         <p>
@@ -114,7 +114,7 @@ require_once __DIR__ . '/config.php';
             });
 
             $('.upload-button').attr('disabled', true);
-            ('.submit-button').attr('disabled', true);
+            $('.submit-button').attr('disabled', true);
 
 
             $.ajax({
@@ -144,7 +144,7 @@ require_once __DIR__ . '/config.php';
                     xhr.upload.addEventListener('progress', function (e) {
                         if (e.lengthComputable) {
                             var percent = Math.round((e.loaded / e.total) * 100);
-                            $('.upload-button').text(percent + '%');
+                            $('.upload-button').text('Uploading: ' + percent + '%');
                         }
                     });
                     return xhr;
@@ -189,6 +189,7 @@ require_once __DIR__ . '/config.php';
         });
 
         $('.delete-image').on('click', function () {
+            // alert('Deleted Image : ' + $(this).parent().find('img').attr('src'));
             $(this).parent().remove();
         });
     });
