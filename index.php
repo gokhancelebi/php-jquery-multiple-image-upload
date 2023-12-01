@@ -44,7 +44,11 @@ require_once __DIR__ . '/config.php';
 
                     foreach ($files as $file => $order) {
                         echo '<div class="image">';
-                        echo '<img src="' . UPLOAD_URL . $file . '" class="img-fluid">';
+                        $src = UPLOAD_URL . $file;
+                        if (file_exists(THUMBNAIL_DIR  . $file)) {
+                            $src = UPLOAD_URL . 'thumbnails/' . $file;
+                        }
+                        echo '<img src="' . $src . '" class="img-fluid">';
                         echo '<input type="hidden" name="order[' . $file . ']" value="' . $order . '" class="orders">';
                         echo '<div class="delete-image">X</div>';
                         echo '</div>';
@@ -188,10 +192,10 @@ require_once __DIR__ . '/config.php';
             }
         });
 
-        $('.delete-image').on('click', function () {
-            // alert('Deleted Image : ' + $(this).parent().find('img').attr('src'));
+        $(document).on('click', '.delete-image', function () {
             $(this).parent().remove();
         });
+
     });
 
 </script>
