@@ -2,7 +2,7 @@
 
 
 $files = $_FILES;
-$order = $_POST['order'];
+$order = isset($_POST['order']) ? $_POST['order'] : [];
 
 $uploaded = [];
 
@@ -38,6 +38,12 @@ foreach ($files as $file) {
 }
 
 
-file_put_contents(__DIR__ . '/order.json', json_encode($order,JSON_PRETTY_PRINT));
+if (count($order) > 0) {
+    file_put_contents(__DIR__ . '/order.json', json_encode($order,JSON_PRETTY_PRINT));
+}else{
+    if (file_exists(__DIR__ . '/order.json')){
+        unlink(__DIR__ . '/order.json');
+    }
+}
 
 echo 'Images Updated!';
