@@ -1,18 +1,43 @@
 <?php
 
 
-$files = $_FILES['file'];
+$files = $_FILES;
 $order = $_POST['order'];
 
-foreach ($files['name'] as $key => $file) {
-    if ($files['error'][$key] === 0) {
-        $tmp = $files['tmp_name'][$key];
-        $filename = time() . '-' . $files['name'][$key];
-        $image_order = $order[$key];
-        $destination = 'uploads/'.$image_order.'-' . $filename;
-        move_uploaded_file($tmp, $destination);
+$uploaded = [];
+
+
+if (isset($files['file'])){
+    $files = $files['file'];
+    foreach ($files['name'] as $key => $file) {
+        if ($files['error'][$key] === 0) {
+            $tmp = $files['tmp_name'][$key];
+            $image_order = $order[$key];
+            $image_name = $files['name'][$key];
+            $image_name = time() . '-' . $image_name;
+            $image_name = str_replace(' ', '-', $image_name);
+            unset ($order[$key]);
+            $order['uploads/' . $image_name] = $image_order;
+            echo 'uploads/' . $image_name . PHP_EOL;
+            move_uploaded_file($tmp, 'uploads/' . $image_name);
+            echo 'uploaded ' . $image_name . PHP_EOL;
+        }
     }
 }
 
-echo 'Uploaded';
 
+$files = glob('uploads/*');
+
+foreach ($files as $file) {
+    if (is_file($file) && $file != 'uploads/.gitignore') {
+        if (!isset($order[$file])) {
+            unlink($file);
+            echo 'deleted ' . $file . PHP_EOL;
+        }
+    }
+}
+
+
+file_put_contents(__DIR__ . '/order.json', json_encode($order,JSON_PRETTY_PRINT));
+
+echo 'Images Updated!';

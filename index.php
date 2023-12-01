@@ -6,8 +6,8 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-    <link  type="text/css" rel="stylesheet" href="assets/bootstrap/dist/css/bootstrap.min.css">
-    <link  type="text/css" rel="stylesheet" href="assets/jquery-ui/dist/themes/base/jquery-ui.min.css">
+    <link type="text/css" rel="stylesheet" href="assets/bootstrap/dist/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="assets/jquery-ui/dist/themes/base/jquery-ui.min.css">
     <link rel="stylesheet" type="text/css" href="assets/style.css">
 </head>
 <body>
@@ -27,72 +27,107 @@
         </p>
         <div class="image-container">
             <div class="image-previews row">
+                <?php
+                if (file_exists(__DIR__ . '/order.json')){
+                    $files = file_get_contents(__DIR__ . '/order.json');
 
+                    $files = json_decode($files, true);
+
+                    // order files by order
+
+                    uasort($files, function ($a, $b) {
+                        return $a > $b;
+                    });
+
+                    foreach ($files as $file => $order) {
+                        echo '<div class="image">';
+                        echo '<img src="' . $file . '" class="img-fluid">';
+                        echo '<input type="hidden" name="order[' . $file . ']" value="' . $order . '" class="orders">';
+                        echo '<div class="delete-image">X</div>';
+                        echo '</div>';
+                    }
+                }else{
+                    $files = [];
+                }
+                ?>
             </div>
-            <div class="information">Drop Images Here</div>
+            <?php
+            if (count($files) == 0) {
+                echo '<div class="information">Drop Images Here</div>';
+            }
+            ?>
         </div>
     </div>
 </div>
 <script src="assets/jquery/dist/jquery.min.js"></script>
 <script src="assets/jquery-ui/dist/jquery-ui.min.js"></script>
 <script>
-    $(function (){
+    $(function () {
 
         var form_data = new FormData();
         var last_order = 1;
 
-        function upload_images(files){
+        function upload_images(files) {
             var html = '';
-            for(var i = 0; i < files.length; i++){
+            for (var i = 0; i < files.length; i++) {
                 let objectUrl = URL.createObjectURL(files[i]);
                 html += '<div class="image">';
-                html += '<img src="'+URL.createObjectURL(files[i])+'" class="img-fluid">';
-                html += '<input type="hidden" name="order['+objectUrl+']" value="'+last_order+'" class="orders">';
+                html += '<img src="' + URL.createObjectURL(files[i]) + '" class="img-fluid">';
+                html += '<input type="hidden" name="order[' + objectUrl + ']" value="' + last_order + '" class="orders">';
+                html += '<div class="delete-image">X</div>';
                 html += '</div>';
                 // insert file data in form data
-                form_data.append('file['+objectUrl+']', files[i]);
+                form_data.append('file[' + objectUrl + ']', files[i]);
 
                 last_order++;
             }
             $('.image-previews').append(html);
             $('.image-container .information').remove();
         }
-        $('.image-container .information').on('click', function (){
+
+        $('.image-container .information').on('click', function () {
             $('#multiple-image').click();
         });
 
-        $('.upload-button').on('click', function (){
+        $('.upload-button').on('click', function () {
             $('#multiple-image').click();
         });
-        $('#multiple-image').on('change', function (){
+        $('#multiple-image').on('change', function () {
             var files = $(this)[0].files;
             upload_images(files);
             $(this).val('');
         });
 
-        $('.upload-form').on('submit', function (e){
+        $('.upload-form').on('submit', function (e) {
+
             e.preventDefault();
-            $('.orders').each(function (){
-                form_data.append($(this).attr('name'), $(this).val());
+
+            let order = 1;
+
+            $('.orders').each(function () {
+                form_data.delete($(this).attr('name'));
+                form_data.append($(this).attr('name'), order);
+                order++;
             });
+
             $.ajax({
                 url: 'upload.php',
                 method: 'post',
                 data: form_data,
                 contentType: false,
                 processData: false,
-                success: function (data){
+                success: function (data) {
                     console.log(data);
                     alert(data);
                 },
-                error: function (err){
+                error: function (err) {
                     console.log(err);
                 },
                 // uploading process for each image
-                xhr: function (){
+                xhr: function () {
                     var xhr = new XMLHttpRequest();
-                    xhr.upload.addEventListener('progress', function (e){
-                        if(e.lengthComputable){
+                    xhr.upload.addEventListener('progress', function (e) {
+                        if (e.lengthComputable) {
                             var percent = Math.round((e.loaded / e.total) * 100);
                             $('.upload-button').text(percent + '%');
                         }
@@ -102,11 +137,11 @@
             });
         });
 
-        $( ".image-previews" ).sortable(
+        $(".image-previews").sortable(
             {
-                update: function( event, ui ) {
+                update: function (event, ui) {
                     var order = 1;
-                    $('.image-previews .col-md-3').each(function (){
+                    $('.image-previews .image').each(function () {
                         $(this).find('input').val(order);
                         order++;
                     });
@@ -114,17 +149,17 @@
             }
         );
 
-        $(".image-previews,.information").on('dragover', function(e) {
+        $(".image-previews,.information").on('dragover', function (e) {
             e.preventDefault();
             e.stopPropagation();
         });
 
-        $(".image-previews,.information").on('dragenter', function(e) {
+        $(".image-previews,.information").on('dragenter', function (e) {
             e.preventDefault();
             e.stopPropagation();
         });
 
-        $(".image-previews,.information").on('drop', function(e) {
+        $(".image-previews,.information").on('drop', function (e) {
             e.preventDefault();
             e.stopPropagation();
             if (e.originalEvent.dataTransfer) {
@@ -136,6 +171,10 @@
                     $('.information').remove()
                 }
             }
+        });
+
+        $('.delete-image').on('click', function () {
+            $(this).parent().remove();
         });
     });
 
